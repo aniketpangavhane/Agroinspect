@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Flask/whatever logs
+*.log
+
+# Data (keep these if they are part of your app)
+# Comment out any of these if you want them tracked.
+# *.csv
+# *.pkl
+

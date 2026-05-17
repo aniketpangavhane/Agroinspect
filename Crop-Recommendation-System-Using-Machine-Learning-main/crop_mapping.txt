@@ -1,0 +1,13 @@
+Crop ID Mapping:
+========================================
+ 1: rice
+ 2: maize
+ 3: cotton
+ 4: orange
+ 5: watermelon
+ 6: grapes
+ 7: mango
+ 8: banana
+ 9: pomegranate
+10: mungbean
+11: mothbeans
