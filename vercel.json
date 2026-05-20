@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app.py": {
+      "excludeFiles": "{.ipynb_checkpoints/**,__pycache__/**,*.ipynb,Crop_recommendation.csv,train_model*.py,test_model.py,RUN_APP.*}"
+    }
+  }
+}

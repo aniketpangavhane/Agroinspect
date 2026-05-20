@@ -1,10 +1,17 @@
+from pathlib import Path
+
 from flask import Flask, request, render_template_string
 import numpy as np
 import pickle
 
+BASE_DIR = Path(__file__).resolve().parent
+
 # Load the model and MinMaxScaler
-model = pickle.load(open('model.pkl', 'rb'))
-ms = pickle.load(open('minmaxscaler.pkl', 'rb'))
+with (BASE_DIR / 'model.pkl').open('rb') as model_file:
+    model = pickle.load(model_file)
+
+with (BASE_DIR / 'minmaxscaler.pkl').open('rb') as scaler_file:
+    ms = pickle.load(scaler_file)
 
 # Create Flask app
 app = Flask(__name__)
@@ -12,7 +19,7 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     # Manually load the HTML content from the file
-    with open('index.html', 'r') as f:
+    with (BASE_DIR / 'index.html').open('r', encoding='utf-8') as f:
         html_content = f.read()
     return render_template_string(html_content)
 
@@ -65,12 +72,12 @@ def predict():
                 result = "Sorry, we could not determine the best crop to be cultivated with the provided data."
 
         # Manually load the HTML content from the file
-        with open('index.html', 'r') as f:
+        with (BASE_DIR / 'index.html').open('r', encoding='utf-8') as f:
             html_content = f.read()
 
         return render_template_string(html_content, result=result)
     except ValueError:
-        with open('index.html', 'r') as f:
+        with (BASE_DIR / 'index.html').open('r', encoding='utf-8') as f:
             html_content = f.read()
         return render_template_string(html_content, result="Error: Please enter valid numeric values for all fields.")
     except Exception as e:
