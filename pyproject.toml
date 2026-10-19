@@ -15,7 +15,7 @@ dependencies = [
     "prometheus-client>=0.20,<1",
     # The checked-in local model artifact was serialized with this version.
     # Keep inference on the same version to avoid unsupported pickle changes.
-    "scikit-learn==1.4.2",
+    "scikit-learn==1.7.2",
     "uvicorn[standard]>=0.30,<1",
 ]
 
