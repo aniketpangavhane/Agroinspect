@@ -10,7 +10,7 @@ services:
     init: true
     environment:
       CROP_ADVISOR_ENV: production
-      CROP_ADVISOR_ALLOWED_HOSTS: localhost,127.0.0.1,api
+      CROP_ADVISOR_ALLOWED_HOSTS: "localhost,127.0.0.1,api,${CROP_ADVISOR_DOMAIN:-}"
       CROP_ADVISOR_MODEL_PATH: /models/model.joblib
       CROP_ADVISOR_MODEL_SHA256: ${CROP_ADVISOR_MODEL_SHA256:?Run RUN_DOCKER.ps1 to hash the approved model first}
       CROP_ADVISOR_CONTRACT_PATH: /contracts/maharashtra_crop_recommendation.v1.json
@@ -80,8 +80,46 @@ services:
       - private
       - host_access
 
+  caddy:
+    profiles: ["public"]
+    image: caddy:2.11.7-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      CROP_ADVISOR_DOMAIN: ${CROP_ADVISOR_DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ./ops/caddy/Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+      - type: volume
+        source: caddy_data
+        target: /data
+      - type: volume
+        source: caddy_config
+        target: /config
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - private
+      - host_access
+
 volumes:
   prometheus_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   private:

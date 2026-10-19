@@ -1,0 +1,9 @@
+{$CROP_ADVISOR_DOMAIN} {
+	encode zstd gzip
+
+	# Keep internal monitoring metrics off the public endpoint.
+	@metrics path /metrics /metrics/*
+	respond @metrics 404
+
+	reverse_proxy api:8000
+}

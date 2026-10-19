@@ -21,6 +21,16 @@ Before deploying, complete these tasks:
 
 The local Compose stack is a development/operations learning tool, not the production host: API and Prometheus are loopback-bound, the model is mounted read-only and hash-checked, and the container runs non-root with a read-only filesystem. Prometheus alert rules cover target availability, model readiness, server error ratio, and p95 latency. Rules become visible in Prometheus; email/chat notifications require a separately configured Alertmanager and receiver.
 
+## Optional public EC2 demo (not production)
+
+The Compose `public` profile adds Caddy as an HTTPS reverse proxy. The API and Prometheus ports remain loopback-only; Caddy publishes only web ports 80/443. Caddy obtains and renews a public certificate when the configured hostname resolves to the EC2 public IP and inbound HTTP/HTTPS reach the instance. See the [Caddy HTTPS prerequisites](https://caddyserver.com/docs/quick-starts/https).
+
+For a no-cost demo hostname, create a subdomain with [DuckDNS](https://www.duckdns.org/), point its A record at the instance's current public IPv4 address, and set `CROP_ADVISOR_DOMAIN=your-name.duckdns.org` in an EC2-local `.env` file (ignored by Git). If EC2's public IPv4 changes after stopping/starting the instance, update the DNS record. Do not put a DuckDNS account token in Git or send it in chat.
+
+After pushing this configuration, add inbound TCP 80 and 443 rules to the EC2 security group; keep SSH (22) restricted to your own IP and do not open 8000 or 9090. Set `CROP_ADVISOR_MODEL_SHA256` in the EC2 shell, then start `docker compose --profile public up -d`; add `--profile monitoring` if Prometheus is also needed. Caddy returns 404 for `/metrics`, while Prometheus scrapes it over the private Docker network.
+
+This profile is deliberately open to anyone, as a demo choice: it has no user login and no application-level rate limiter. Public traffic can consume the instance's CPU and AWS data transfer. Monitor usage and stop the profile when it is not needed. Before calling the service production-ready, add authentication or abuse controls, rate limiting, privacy review, and an operational owner as described above.
+
 ## CD decision
 
 The current workflow is CI, not automatic CD. A deployment action should only be added after you choose the hosting account, service name/region, public-vs-private access, artifact storage, and GitHub-to-cloud authentication. Use OIDC/workload identity federation instead of a long-lived service-account key, protect deployment with a GitHub environment approval, deploy immutable image digests, and retain a one-step rollback. This is an intentional gate, not a missing line of YAML: a workflow that silently creates public infrastructure would be unsafe and not reproducible without your account details.
