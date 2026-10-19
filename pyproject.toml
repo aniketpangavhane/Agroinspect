@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["httpx2>=2,<3", "pytest>=8,<9"]
+dev = ["httpx2>=2,<3", "pytest>=8,<10"]
 
 [project.scripts]
 crop-advisor-audit = "crop_advisor.audit:main"
