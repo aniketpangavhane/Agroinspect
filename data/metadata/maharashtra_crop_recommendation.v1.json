@@ -1,0 +1,16 @@
+{
+  "manifest_version": "1.0.0",
+  "source_file": "Crop_recommendation.csv",
+  "sha256_at_intake": "ce698d31a9d3544aaa8e149da2de1321cbb9e840020574654bc52d59ca691003",
+  "provider": "User-supplied local file",
+  "source_url": null,
+  "licence": "unknown",
+  "retrieved_at": "unknown",
+  "geographic_coverage": "Kolhapur, Pune, Sangli, Satara, and Solapur districts, Maharashtra, India",
+  "temporal_coverage": "unknown",
+  "status": "prototype_unverified",
+  "notes": [
+    "Update this manifest whenever the source file changes.",
+    "Do not promote a model trained on this file beyond an educational/regional prototype until provenance, units, seasons, and outcome data are verified."
+  ]
+}

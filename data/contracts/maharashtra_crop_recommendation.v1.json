@@ -1,0 +1,117 @@
+{
+  "contract_version": "1.1.0",
+  "dataset": {
+    "name": "Maharashtra crop recommendation prototype",
+    "maturity": "prototype_unverified",
+    "intended_scope": "Prototype that predicts the recommended-crop label supplied in this file for inputs from the five represented districts. This is not independently validated, field-level agronomic advice.",
+    "target": "crop",
+    "target_definition": "Crop is the dataset's supplied recommended-crop label. The model learns to predict that label; it does not establish that the crop is optimal or predict crop success, yield, or profit.",
+    "group_column": "district"
+  },
+  "columns": [
+    {
+      "source_name": "District_Name",
+      "name": "district",
+      "role": "feature",
+      "kind": "categorical",
+      "required": true,
+      "normalization": {"trim": true, "collapse_internal_whitespace": true}
+    },
+    {
+      "source_name": "Soil_color",
+      "name": "soil_color",
+      "role": "feature",
+      "kind": "categorical",
+      "required": true,
+      "normalization": {"trim": true, "collapse_internal_whitespace": true}
+    },
+    {
+      "source_name": "Nitrogen",
+      "name": "nitrogen",
+      "role": "feature",
+      "kind": "numeric",
+      "required": true,
+      "minimum": 0,
+      "unit": "not supplied by source; confirm soil-test unit before production use"
+    },
+    {
+      "source_name": "Phosphorus",
+      "name": "phosphorus",
+      "role": "feature",
+      "kind": "numeric",
+      "required": true,
+      "minimum": 0,
+      "unit": "not supplied by source; confirm soil-test unit before production use"
+    },
+    {
+      "source_name": "Potassium",
+      "name": "potassium",
+      "role": "feature",
+      "kind": "numeric",
+      "required": true,
+      "minimum": 0,
+      "unit": "not supplied by source; confirm soil-test unit before production use"
+    },
+    {
+      "source_name": "pH",
+      "name": "ph",
+      "role": "feature",
+      "kind": "numeric",
+      "required": true,
+      "minimum": 0,
+      "maximum": 14,
+      "unit": "pH scale"
+    },
+    {
+      "source_name": "Rainfall",
+      "name": "rainfall",
+      "role": "feature",
+      "kind": "numeric",
+      "required": true,
+      "minimum": 0,
+      "unit": "not supplied by source; confirm unit and measurement period before production use"
+    },
+    {
+      "source_name": "Temperature",
+      "name": "temperature",
+      "role": "feature",
+      "kind": "numeric",
+      "required": true,
+      "unit": "not supplied by source; confirm unit and measurement period before production use"
+    },
+    {
+      "source_name": "Crop",
+      "name": "crop",
+      "role": "target",
+      "kind": "categorical",
+      "required": true,
+      "normalization": {"trim": true, "collapse_internal_whitespace": true}
+    },
+    {
+      "source_name": "Fertilizer",
+      "name": "fertilizer",
+      "role": "excluded",
+      "kind": "categorical",
+      "required": true,
+      "reason": "A fertiliser choice is downstream of crop selection and may leak the target. Keep it only for future, agronomist-reviewed advisory work."
+    },
+    {
+      "source_name": "Link",
+      "name": "reference_link",
+      "role": "excluded",
+      "kind": "categorical",
+      "required": true,
+      "reason": "Reference links are untrusted content metadata and are directly target-correlated in this dataset. They must never be model features."
+    }
+  ],
+  "quality_gates": {
+    "minimum_rows": 100,
+    "warn_if_target_class_count_below": 30,
+    "production_blockers": [
+      "Source provenance and licence are not recorded.",
+      "There is no season, date, year, plot identifier, or geospatial coordinate.",
+      "There is no yield, profit, irrigation, crop-history, or verified farmer outcome.",
+      "Measurement units and collection methodology are unconfirmed."
+    ]
+  }
+}

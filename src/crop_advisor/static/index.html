@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f6ef">
+    <title>Crop Advisor | Prototype</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Crop Advisor home">
+        <span class="brand-mark" aria-hidden="true">CA</span>
+        <span>Crop Advisor <span class="brand-tag">PROTOTYPE</span></span>
+      </a>
+      <span class="region-label"><span class="status-dot"></span> Maharashtra · 5 supported districts</span>
+    </header>
+
+    <main class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">A regional learning prototype</p>
+        <h1 id="page-title">Explore a crop recommendation</h1>
+        <p class="intro-copy">Enter the soil and climate values available to you to see which crop label this prototype ranks first.</p>
+      </section>
+
+      <section class="notice" aria-label="Important prototype limitation">
+        <span class="notice-icon" aria-hidden="true">!</span>
+        <p><strong>Please treat this as an experiment, not farming advice.</strong> The model predicts labels supplied in its dataset. It does not establish which crop will succeed, or predict yield or profit. Check decisions with a qualified local agriculture professional.</p>
+      </section>
+
+      <div class="workspace-grid">
+        <section class="card form-card" aria-labelledby="form-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Your field conditions</p>
+              <h2 id="form-title">What do you know?</h2>
+            </div>
+            <span class="step-badge">7 inputs</span>
+          </div>
+
+          <p class="form-lede">Use values from a soil test or a trusted local source. Choices are limited to categories seen in the prototype dataset.</p>
+          <p id="form-status" class="form-status" role="status" aria-live="polite">Loading supported districts and soil colours…</p>
+
+          <form id="recommendation-form" novalidate>
+            <fieldset id="conditions" disabled>
+              <legend class="visually-hidden">Soil and climate inputs</legend>
+              <div class="field-grid">
+                <div class="field field-wide">
+                  <label for="district">District <span class="required-mark">Required</span></label>
+                  <select id="district" name="district" required>
+                    <option value="">Choose a supported district</option>
+                  </select>
+                  <small>Select the district where the field is located.</small>
+                </div>
+
+                <div class="field field-wide">
+                  <label for="soil_color">Soil colour <span class="required-mark">Required</span></label>
+                  <select id="soil_color" name="soil_color" required>
+                    <option value="">Choose a soil colour</option>
+                  </select>
+                  <small>Use the category that best matches your soil report or local assessment.</small>
+                </div>
+
+                <div class="field">
+                  <label for="nitrogen">Nitrogen (N) <span class="required-mark">Required</span></label>
+                  <input id="nitrogen" name="nitrogen" type="number" min="0" step="any" inputmode="decimal" required aria-describedby="nutrient-unit">
+                </div>
+                <div class="field">
+                  <label for="phosphorus">Phosphorus (P) <span class="required-mark">Required</span></label>
+                  <input id="phosphorus" name="phosphorus" type="number" min="0" step="any" inputmode="decimal" required aria-describedby="nutrient-unit">
+                </div>
+                <div class="field">
+                  <label for="potassium">Potassium (K) <span class="required-mark">Required</span></label>
+                  <input id="potassium" name="potassium" type="number" min="0" step="any" inputmode="decimal" required aria-describedby="nutrient-unit">
+                </div>
+                <div class="field">
+                  <label for="ph">Soil pH <span class="required-mark">Required</span></label>
+                  <input id="ph" name="ph" type="number" min="0" max="14" step="any" inputmode="decimal" required aria-describedby="ph-help">
+                  <small id="ph-help">pH scale, from 0 to 14.</small>
+                </div>
+                <div class="field">
+                  <label for="rainfall">Rainfall <span class="required-mark">Required</span></label>
+                  <input id="rainfall" name="rainfall" type="number" min="0" step="any" inputmode="decimal" required aria-describedby="rainfall-help">
+                  <small id="rainfall-help">Dataset unit and measurement period are unknown.</small>
+                </div>
+                <div class="field">
+                  <label for="temperature">Temperature <span class="required-mark">Required</span></label>
+                  <input id="temperature" name="temperature" type="number" step="any" inputmode="decimal" required aria-describedby="temperature-help">
+                  <small id="temperature-help">Dataset unit and measurement period are unknown.</small>
+                </div>
+              </div>
+              <p id="nutrient-unit" class="unit-note">N, P and K units are not documented. Enter values only if they use the same scale as the source data; otherwise the result may be misleading.</p>
+              <button id="submit-button" class="primary-button" type="submit">
+                <span>Get prototype ranking</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </fieldset>
+          </form>
+          <p class="privacy-note">No account is needed. This prototype does not save your field inputs.</p>
+        </section>
+
+        <aside class="side-column" aria-label="About this prototype">
+          <section class="card guide-card">
+            <span class="guide-icon" aria-hidden="true">i</span>
+            <h2>Before you begin</h2>
+            <ul>
+              <li>Use the units and scales from the original data source where known.</li>
+              <li>Several source units and collection details have not been confirmed.</li>
+              <li>Inputs outside the training data range may receive a caution.</li>
+            </ul>
+          </section>
+
+          <section id="result-card" class="card result-card" aria-labelledby="result-title" hidden>
+            <p class="eyebrow">Prototype result</p>
+            <h2 id="result-title" tabindex="-1">Top predicted crop label</h2>
+            <p id="best-crop" class="best-crop">—</p>
+            <p id="top-score" class="score-note"></p>
+            <div class="divider"></div>
+            <h3>Other ranked labels</h3>
+            <ol id="alternatives" class="alternatives"></ol>
+            <p class="score-caveat">Model scores describe how the classifier ranked labels. They are not the chance of crop success.</p>
+            <div id="warnings-wrap" class="warnings-wrap" hidden>
+              <h3>Keep in mind</h3>
+              <ul id="warnings" class="warnings"></ul>
+            </div>
+          </section>
+        </aside>
+      </div>
+      <footer class="page-footer">Prototype only · Supported area: Kolhapur, Pune, Sangli, Satara and Solapur</footer>
+    </main>
+  </body>
+</html>

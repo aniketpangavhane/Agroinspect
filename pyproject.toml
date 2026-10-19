@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crop-advisor"
+version = "0.1.0"
+description = "A traceable regional crop-suitability prototype"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.111,<1",
+    "joblib>=1.4,<2",
+    "pandas>=2.2,<3",
+    "prometheus-client>=0.20,<1",
+    # The checked-in local model artifact was serialized with this version.
+    # Keep inference on the same version to avoid unsupported pickle changes.
+    "scikit-learn==1.4.2",
+    "uvicorn[standard]>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = ["httpx2>=2,<3", "pytest>=8,<9"]
+
+[project.scripts]
+crop-advisor-audit = "crop_advisor.audit:main"
+crop-advisor-train = "crop_advisor.training:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+crop_advisor = ["static/*.html", "static/*.css", "static/*.js"]

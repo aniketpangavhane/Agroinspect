@@ -1,0 +1,45 @@
+groups:
+  - name: crop-advisor-api
+    rules:
+      - alert: CropAdvisorTargetDown
+        expr: up{job="crop-advisor-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Crop Advisor API is not reachable by Prometheus
+          description: Check the API container, private network, and readiness logs.
+
+      - alert: CropAdvisorModelNotReady
+        expr: crop_advisor_model_ready{job="crop-advisor-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Crop Advisor has no compatible model loaded
+          description: Check the mounted model bundle, SHA-256 setting, and startup logs.
+
+      - alert: CropAdvisorHighServerErrorRate
+        expr: |
+          sum(rate(crop_advisor_http_requests_total{job="crop-advisor-api",status=~"5.."}[5m]))
+          / sum(rate(crop_advisor_http_requests_total{job="crop-advisor-api"}[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Crop Advisor server errors exceed 5%
+          description: Review structured logs using the response request ID; do not log farm inputs.
+
+      - alert: CropAdvisorHighP95Latency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(crop_advisor_http_request_duration_seconds_bucket{job="crop-advisor-api"}[5m]))
+          ) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Crop Advisor p95 HTTP latency exceeds one second
+          description: Inspect resource saturation and the API's dependency/runtime health.

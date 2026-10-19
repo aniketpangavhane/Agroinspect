@@ -1,0 +1,86 @@
+name: crop-advisor
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: crop-advisor-api:local
+    restart: unless-stopped
+    init: true
+    environment:
+      CROP_ADVISOR_ENV: production
+      CROP_ADVISOR_ALLOWED_HOSTS: localhost,127.0.0.1,api
+      CROP_ADVISOR_MODEL_PATH: /models/model.joblib
+      CROP_ADVISOR_MODEL_SHA256: ${CROP_ADVISOR_MODEL_SHA256:?Run RUN_DOCKER.ps1 to hash the approved model first}
+      CROP_ADVISOR_CONTRACT_PATH: /contracts/maharashtra_crop_recommendation.v1.json
+      CROP_ADVISOR_MAX_REQUEST_BYTES: 65536
+      CROP_ADVISOR_METRICS_ENABLED: "true"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - type: bind
+        source: ./artifacts/maharashtra_crop_suitability_v1
+        target: /models
+        read_only: true
+      - type: bind
+        source: ./data/contracts
+        target: /contracts
+        read_only: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=2).read()"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+    networks:
+      - private
+
+  prometheus:
+    profiles: ["monitoring"]
+    image: prom/prometheus:v3.15.0
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - type: bind
+        source: ./ops/prometheus/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        read_only: true
+      - type: bind
+        source: ./ops/prometheus/alerts.yml
+        target: /etc/prometheus/alerts.yml
+        read_only: true
+      - type: volume
+        source: prometheus_data
+        target: /prometheus
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - private
+
+volumes:
+  prometheus_data:
+
+networks:
+  private:
+    internal: true

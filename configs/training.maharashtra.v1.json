@@ -1,0 +1,25 @@
+{
+  "run_name": "maharashtra_crop_suitability_v1",
+  "data_path": "Crop_recommendation.csv",
+  "contract_path": "data/contracts/maharashtra_crop_recommendation.v1.json",
+  "manifest_path": "data/metadata/maharashtra_crop_recommendation.v1.json",
+  "curated_data_path": "data/curated/maharashtra_crop_recommendation_v1.csv",
+  "artifact_dir": "artifacts/maharashtra_crop_suitability_v1",
+  "random_seed": 42,
+  "validation": {
+    "test_size": 0.2,
+    "primary_strategy": "stratified_random_holdout",
+    "also_run_leave_one_district_out": true
+  },
+  "model": {
+    "algorithm": "random_forest_classifier",
+    "n_estimators": 200,
+    "min_samples_leaf": 2,
+    "class_weight": "balanced_subsample",
+    "n_jobs": -1
+  },
+  "recommendation": {
+    "top_k": 3,
+    "low_confidence_probability": 0.45
+  }
+}

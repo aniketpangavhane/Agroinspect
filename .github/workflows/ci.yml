@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install application and test dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+
+      - name: Run unit and API tests
+        run: python -m pytest tests -q
+
+      - name: Audit the dataset against its declarative contract
+        run: crop-advisor-audit
+
+      - name: Train the versioned model bundle
+        run: crop-advisor-train
+
+      - name: Validate Compose configuration
+        shell: bash
+        run: |
+          export CROP_ADVISOR_MODEL_SHA256="$(sha256sum artifacts/maharashtra_crop_suitability_v1/model.joblib | cut -d ' ' -f 1)"
+          docker compose config --quiet
+
+      - name: Build the production container image
+        run: docker build --tag crop-advisor-api:ci .
+
+      - name: Smoke test the hardened container
+        shell: bash
+        run: |
+          model_sha256="$(sha256sum artifacts/maharashtra_crop_suitability_v1/model.joblib | cut -d ' ' -f 1)"
+          container_id="$(docker run --detach \
+            --publish 127.0.0.1:8000:8000 \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges:true \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/artifacts/maharashtra_crop_suitability_v1,target=/models,readonly" \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/data/contracts,target=/contracts,readonly" \
+            --env CROP_ADVISOR_ENV=production \
+            --env CROP_ADVISOR_ALLOWED_HOSTS=localhost,127.0.0.1 \
+            --env CROP_ADVISOR_METRICS_ENABLED=false \
+            --env CROP_ADVISOR_MODEL_PATH=/models/model.joblib \
+            --env CROP_ADVISOR_MODEL_SHA256="$model_sha256" \
+            --env CROP_ADVISOR_CONTRACT_PATH=/contracts/maharashtra_crop_recommendation.v1.json \
+            crop-advisor-api:ci)"
+          cleanup() {
+            if [ "${container_id:-}" ]; then
+              docker logs "$container_id" || true
+              docker rm --force "$container_id" >/dev/null || true
+            fi
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/ready; then
+              curl --fail --silent http://127.0.0.1:8000/metrics --output /dev/null && {
+                echo "Metrics must be disabled in production mode."
+                exit 1
+              }
+              curl --fail --silent http://127.0.0.1:8000/v1/options --output /dev/null
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Container did not become ready."
+          exit 1
