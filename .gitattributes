@@ -1,0 +1,2 @@
+# Preserve the reviewed source CSV bytes so its manifest SHA-256 remains stable.
+Crop_recommendation.csv -text
